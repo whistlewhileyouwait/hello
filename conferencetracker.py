@@ -1,4 +1,6 @@
-git branch
+git checkout -b main
+git push -u origin main
+
 git status 
 git add .  
 git commit -m "Deploying app"

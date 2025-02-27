@@ -3,9 +3,9 @@ import pandas as pd
 import datetime
 import qrcode
 from io import BytesIO
-from pyzbar.pyzbar import decode
-from PIL import Image
 import cv2
+import numpy as np
+from PIL import Image
 
 # Placeholder data storage (in-memory, replace with a database later)
 if 'attendees' not in st.session_state:
@@ -21,13 +21,13 @@ def generate_qr_code(badge_id):
     qr.save(buffer, format="PNG")
     return buffer.getvalue()
 
-# Function to scan QR code from an uploaded image
+# Function to scan QR code using OpenCV
 def scan_qr_code(uploaded_file):
     image = Image.open(uploaded_file)
-    decoded_objects = decode(image)
-    if decoded_objects:
-        return decoded_objects[0].data.decode("utf-8")
-    return None
+    image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+    detector = cv2.QRCodeDetector()
+    data, _, _ = detector.detectAndDecode(image)
+    return data if data else None
 
 # Navigation function
 def switch_page(page_name):

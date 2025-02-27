@@ -120,3 +120,14 @@ if st.session_state['page'] == 'home':
     if st.button("🔐 Admin Area"):
         switch_page('admin')
 
+# Admin Page
+elif st.session_state['page'] == 'admin':
+    st.title("🔐 Admin - Attendance Dashboard")
+    st.dataframe(st.session_state['attendees'])
+    csv = st.session_state['attendees'].to_csv(index=False).encode('utf-8')
+    st.download_button(label="📥 Download Attendance Data", data=csv, file_name="attendance_data.csv", mime="text/csv")
+    if st.button("➕ Register Attendees"):
+        switch_page('register_attendee')
+    if st.button("⬅ Back to Home"):
+        switch_page('home')
+

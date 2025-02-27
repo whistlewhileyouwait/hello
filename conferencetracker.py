@@ -1,5 +1,4 @@
-git checkout -b main
-git push -u origin main
+git checkout main
 
 git status 
 git add .  

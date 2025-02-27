@@ -37,16 +37,10 @@ def switch_page(page_name):
 if st.session_state['page'] == 'home':
     st.title("📋 Conference Check-In System - Demo")
     
-    if st.button("📷 Scan QR for Check-In"):
+    if st.button("📷 Scan QR Code for Check-In"):
         switch_page('scan_qr')
-    if st.button("✏️ Manual Check-In"):
-        switch_page('manual_checkin')
-    if st.button("✏️ Manual Check-Out"):
-        switch_page('manual_checkout')
     if st.button("🔐 Admin - Attendance Dashboard"):
         switch_page('admin')
-    if st.button("➕ Register Attendees"):
-        switch_page('register_attendee')
 
 elif st.session_state['page'] == 'scan_qr':
     st.title("📷 Scan QR for Check-In")
@@ -71,8 +65,20 @@ elif st.session_state['page'] == 'scan_qr':
     if st.button("⬅ Back to Home"):
         switch_page('home')
 
-elif st.session_state['page'] == 'manual_checkin':
-    st.title("✏️ Manual Check-In")
+elif st.session_state['page'] == 'admin':
+    st.title("🔐 Admin - Attendance Dashboard")
+    st.dataframe(st.session_state['attendees'])
+    csv = st.session_state['attendees'].to_csv(index=False).encode('utf-8')
+    st.download_button(label="📥 Download Attendance Data", data=csv, file_name="attendance_data.csv", mime="text/csv")
+    if st.button("✏️ Manual Check-In/Out"):
+        switch_page('manual_checkinout')
+    if st.button("➕ Register Attendees"):
+        switch_page('register_attendee')
+    if st.button("⬅ Back to Home"):
+        switch_page('home')
+
+elif st.session_state['page'] == 'manual_checkinout':
+    st.title("✏️ Manual Check-In/Out")
     if st.session_state['attendees'].empty:
         st.warning("No attendees found. Please register attendees first.")
     else:
@@ -82,30 +88,13 @@ elif st.session_state['page'] == 'manual_checkin':
             current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             st.session_state['attendees'].at[attendee_index, 'Check-in Time'] = current_time
             st.success(f"Manually checked in {selected_attendee} at {current_time}")
-    if st.button("⬅ Back to Home"):
-        switch_page('home')
-
-elif st.session_state['page'] == 'manual_checkout':
-    st.title("✏️ Manual Check-Out")
-    if st.session_state['attendees'].empty:
-        st.warning("No attendees found. Please register attendees first.")
-    else:
-        selected_attendee = st.selectbox("Select Attendee", st.session_state['attendees']['Name'].tolist())
         if st.button("Manually Check-Out"):
             attendee_index = st.session_state['attendees'][st.session_state['attendees']['Name'] == selected_attendee].index[0]
             current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             st.session_state['attendees'].at[attendee_index, 'Check-out Time'] = current_time
             st.success(f"Manually checked out {selected_attendee} at {current_time}")
-    if st.button("⬅ Back to Home"):
-        switch_page('home')
-
-elif st.session_state['page'] == 'admin':
-    st.title("🔐 Admin - Attendance Dashboard")
-    st.dataframe(st.session_state['attendees'])
-    csv = st.session_state['attendees'].to_csv(index=False).encode('utf-8')
-    st.download_button(label="📥 Download Attendance Data", data=csv, file_name="attendance_data.csv", mime="text/csv")
-    if st.button("⬅ Back to Home"):
-        switch_page('home')
+    if st.button("⬅ Back to Admin Dashboard"):
+        switch_page('admin')
 
 elif st.session_state['page'] == 'register_attendee':
     st.title("➕ Register Attendees")
@@ -120,5 +109,5 @@ elif st.session_state['page'] == 'register_attendee':
             st.image(generate_qr_code(badge_id), caption=f"QR Code for {name}")
         else:
             st.warning("Please enter name, email, and badge ID.")
-    if st.button("⬅ Back to Home"):
-        switch_page('home')
+    if st.button("⬅ Back to Admin Dashboard"):
+        switch_page('admin')

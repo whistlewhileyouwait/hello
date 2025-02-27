@@ -1,5 +1,3 @@
-mv conference tracker conferencetracker.py
-
 git status 
 git add .  
 git commit -m "Deploying app"

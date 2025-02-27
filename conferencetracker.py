@@ -32,6 +32,8 @@ if st.session_state['page'] == 'home':
         switch_page('manual_checkin')
     if st.button("🔐 Admin - Attendance Dashboard"):
         switch_page('admin')
+    if st.button("➕ Register Attendees"):
+        switch_page('register_attendee')
 
 elif st.session_state['page'] == 'scan_qr':
     st.title("📷 Scan QR for Check-In")
@@ -69,6 +71,22 @@ elif st.session_state['page'] == 'manual_checkin':
 elif st.session_state['page'] == 'admin':
     st.title("🔐 Admin - Attendance Dashboard")
     st.dataframe(st.session_state['attendees'])
+    if st.button("⬅ Back to Home"):
+        switch_page('home')
+
+elif st.session_state['page'] == 'register_attendee':
+    st.title("➕ Register Attendees")
+    name = st.text_input("Attendee Name")
+    email = st.text_input("Attendee Email")
+    badge_id = st.text_input("Assign Badge ID")
+    if st.button("Register"):
+        if name and email and badge_id:
+            new_entry = pd.DataFrame([[badge_id, name, email, None, None]], columns=st.session_state['attendees'].columns)
+            st.session_state['attendees'] = pd.concat([st.session_state['attendees'], new_entry], ignore_index=True)
+            st.success(f"Registered {name} with Badge ID {badge_id}")
+            st.image(generate_qr_code(badge_id), caption=f"QR Code for {name}")
+        else:
+            st.warning("Please enter name, email, and badge ID.")
     if st.button("⬅ Back to Home"):
         switch_page('home')
 

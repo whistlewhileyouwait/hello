@@ -126,8 +126,26 @@ elif st.session_state['page'] == 'admin':
     st.dataframe(st.session_state['attendees'])
     csv = st.session_state['attendees'].to_csv(index=False).encode('utf-8')
     st.download_button(label="📥 Download Attendance Data", data=csv, file_name="attendance_data.csv", mime="text/csv")
-    if st.button("➕ Register Attendees"):
+    if st.button("➕ Register Attendee"):
         switch_page('register_attendee')
     if st.button("⬅ Back to Home"):
         switch_page('home')
+
+# Register Attendee Page
+elif st.session_state['page'] == 'register_attendee':
+    st.title("➕ Register Attendee")
+    name = st.text_input("Attendee Name")
+    email = st.text_input("Attendee Email")
+    badge_id = st.text_input("Assign Badge ID")
+    if st.button("Register"):
+        if name and email and badge_id:
+            new_entry = pd.DataFrame([[badge_id, name, email, None, None]], columns=st.session_state['attendees'].columns)
+            st.session_state['attendees'] = pd.concat([st.session_state['attendees'], new_entry], ignore_index=True)
+            save_data(st.session_state['attendees'])
+            st.success(f"Registered {name} with Badge ID {badge_id}")
+            st.image(generate_qr_code(badge_id), caption=f"QR Code for {name}")
+        else:
+            st.warning("Please enter name, email, and badge ID.")
+    if st.button("⬅ Back to Admin"):
+        switch_page('admin')
 

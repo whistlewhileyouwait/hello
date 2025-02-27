@@ -1,10 +1,3 @@
-git checkout main
-
-git status 
-git add .  
-git commit -m "Deploying app"
-git push origin main 
-
 
 import streamlit as st
 import pandas as pd

@@ -122,4 +122,3 @@ elif st.session_state['page'] == 'register_attendee':
             st.warning("Please enter name, email, and badge ID.")
     if st.button("⬅ Back to Home"):
         switch_page('home')
-

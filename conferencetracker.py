@@ -6,10 +6,24 @@ from io import BytesIO
 import cv2
 import numpy as np
 from PIL import Image
+import os
 
-# Placeholder data storage (in-memory, replace with a database later)
+# File to store attendee data
+ATTENDEE_FILE = "attendees.csv"
+
+# Function to load data from CSV
+def load_data():
+    if os.path.exists(ATTENDEE_FILE):
+        return pd.read_csv(ATTENDEE_FILE)
+    return pd.DataFrame(columns=['Badge ID', 'Name', 'Email', 'Check-in Time', 'Check-out Time'])
+
+# Function to save data to CSV
+def save_data(df):
+    df.to_csv(ATTENDEE_FILE, index=False)
+
+# Load attendee data
 if 'attendees' not in st.session_state:
-    st.session_state['attendees'] = pd.DataFrame(columns=['Badge ID', 'Name', 'Email', 'Check-in Time', 'Check-out Time'])
+    st.session_state['attendees'] = load_data()
 
 if 'page' not in st.session_state:
     st.session_state['page'] = 'home'
@@ -58,6 +72,7 @@ elif st.session_state['page'] == 'scan_qr':
                 else:
                     df.at[attendee_index, 'Check-out Time'] = current_time
                     st.success(f"Checked out {df.at[attendee_index, 'Name']} at {current_time}")
+                save_data(df)  # Save updated data
             else:
                 st.warning("Badge ID not found. Use manual check-in if needed.")
         else:
@@ -87,11 +102,13 @@ elif st.session_state['page'] == 'manual_checkinout':
             attendee_index = st.session_state['attendees'][st.session_state['attendees']['Name'] == selected_attendee].index[0]
             current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             st.session_state['attendees'].at[attendee_index, 'Check-in Time'] = current_time
+            save_data(st.session_state['attendees'])  # Save updated data
             st.success(f"Manually checked in {selected_attendee} at {current_time}")
         if st.button("Manually Check-Out"):
             attendee_index = st.session_state['attendees'][st.session_state['attendees']['Name'] == selected_attendee].index[0]
             current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             st.session_state['attendees'].at[attendee_index, 'Check-out Time'] = current_time
+            save_data(st.session_state['attendees'])  # Save updated data
             st.success(f"Manually checked out {selected_attendee} at {current_time}")
     if st.button("⬅ Back to Admin Dashboard"):
         switch_page('admin')
@@ -105,9 +122,11 @@ elif st.session_state['page'] == 'register_attendee':
         if name and email and badge_id:
             new_entry = pd.DataFrame([[badge_id, name, email, None, None]], columns=st.session_state['attendees'].columns)
             st.session_state['attendees'] = pd.concat([st.session_state['attendees'], new_entry], ignore_index=True)
+            save_data(st.session_state['attendees'])  # Save updated data
             st.success(f"Registered {name} with Badge ID {badge_id}")
             st.image(generate_qr_code(badge_id), caption=f"QR Code for {name}")
         else:
             st.warning("Please enter name, email, and badge ID.")
     if st.button("⬅ Back to Admin Dashboard"):
         switch_page('admin')
+

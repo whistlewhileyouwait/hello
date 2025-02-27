@@ -18,16 +18,21 @@ def generate_qr_code(badge_id):
     qr.save(buffer, format="PNG")
     return buffer.getvalue()
 
+# Function to change pages
+def switch_page(page_name):
+    st.session_state['page'] = page_name
+    st.experimental_rerun()
+
 # Navigation
 if st.session_state['page'] == 'home':
     st.title("📋 Conference Check-In System - Demo")
     
     if st.button("📷 Scan QR for Check-In"):
-        st.session_state['page'] = 'scan_qr'
+        switch_page('scan_qr')
     if st.button("✏️ Manual Check-In"):
-        st.session_state['page'] = 'manual_checkin'
+        switch_page('manual_checkin')
     if st.button("🔐 Admin - Attendance Dashboard"):
-        st.session_state['page'] = 'admin'
+        switch_page('admin')
 
 elif st.session_state['page'] == 'scan_qr':
     st.title("📷 Scan QR for Check-In")
@@ -46,23 +51,25 @@ elif st.session_state['page'] == 'scan_qr':
         else:
             st.warning("Badge ID not found. Use manual check-in if needed.")
     if st.button("⬅ Back to Home"):
-        st.session_state['page'] = 'home'
+        switch_page('home')
 
 elif st.session_state['page'] == 'manual_checkin':
     st.title("✏️ Manual Check-In")
-    selected_attendee = st.selectbox("Select Attendee", st.session_state['attendees']['Name'].tolist(), index=None)
-    if st.button("Manually Check-In"):
-        if selected_attendee:
+    if st.session_state['attendees'].empty:
+        st.warning("No attendees found. Please register attendees first.")
+    else:
+        selected_attendee = st.selectbox("Select Attendee", st.session_state['attendees']['Name'].tolist())
+        if st.button("Manually Check-In"):
             attendee_index = st.session_state['attendees'][st.session_state['attendees']['Name'] == selected_attendee].index[0]
             current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             st.session_state['attendees'].at[attendee_index, 'Check-in Time'] = current_time
             st.success(f"Manually checked in {selected_attendee} at {current_time}")
     if st.button("⬅ Back to Home"):
-        st.session_state['page'] = 'home'
+        switch_page('home')
 
 elif st.session_state['page'] == 'admin':
     st.title("🔐 Admin - Attendance Dashboard")
     st.dataframe(st.session_state['attendees'])
     if st.button("⬅ Back to Home"):
-        st.session_state['page'] = 'home'
-
+        switch_page('home')
+        

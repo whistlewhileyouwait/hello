@@ -1,3 +1,6 @@
+git add requirements.txt
+git commit -m "Added requirements file for dependencies"
+git push origin main
 
 import streamlit as st
 import pandas as pd

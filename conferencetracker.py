@@ -3,6 +3,9 @@ import pandas as pd
 import datetime
 import qrcode
 from io import BytesIO
+from pyzbar.pyzbar import decode
+from PIL import Image
+import cv2
 
 # Placeholder data storage (in-memory, replace with a database later)
 if 'attendees' not in st.session_state:
@@ -17,6 +20,14 @@ def generate_qr_code(badge_id):
     buffer = BytesIO()
     qr.save(buffer, format="PNG")
     return buffer.getvalue()
+
+# Function to scan QR code from an uploaded image
+def scan_qr_code(uploaded_file):
+    image = Image.open(uploaded_file)
+    decoded_objects = decode(image)
+    if decoded_objects:
+        return decoded_objects[0].data.decode("utf-8")
+    return None
 
 # Navigation function
 def switch_page(page_name):
@@ -39,20 +50,24 @@ if st.session_state['page'] == 'home':
 
 elif st.session_state['page'] == 'scan_qr':
     st.title("📷 Scan QR for Check-In")
-    scan_badge = st.text_input("Scan or Enter Badge ID")
-    if st.button("Check-In / Check-Out"):
-        df = st.session_state['attendees']
-        if scan_badge in df['Badge ID'].values:
-            attendee_index = df[df['Badge ID'] == scan_badge].index[0]
-            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            if pd.isnull(df.at[attendee_index, 'Check-in Time']):
-                df.at[attendee_index, 'Check-in Time'] = current_time
-                st.success(f"Checked in {df.at[attendee_index, 'Name']} at {current_time}")
+    uploaded_file = st.file_uploader("Upload QR Code Image", type=["png", "jpg", "jpeg"])
+    if uploaded_file is not None:
+        badge_id = scan_qr_code(uploaded_file)
+        if badge_id:
+            df = st.session_state['attendees']
+            if badge_id in df['Badge ID'].values:
+                attendee_index = df[df['Badge ID'] == badge_id].index[0]
+                current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                if pd.isnull(df.at[attendee_index, 'Check-in Time']):
+                    df.at[attendee_index, 'Check-in Time'] = current_time
+                    st.success(f"Checked in {df.at[attendee_index, 'Name']} at {current_time}")
+                else:
+                    df.at[attendee_index, 'Check-out Time'] = current_time
+                    st.success(f"Checked out {df.at[attendee_index, 'Name']} at {current_time}")
             else:
-                df.at[attendee_index, 'Check-out Time'] = current_time
-                st.success(f"Checked out {df.at[attendee_index, 'Name']} at {current_time}")
+                st.warning("Badge ID not found. Use manual check-in if needed.")
         else:
-            st.warning("Badge ID not found. Use manual check-in if needed.")
+            st.warning("No QR code detected. Please try another image.")
     if st.button("⬅ Back to Home"):
         switch_page('home')
 

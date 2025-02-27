@@ -18,10 +18,9 @@ def generate_qr_code(badge_id):
     qr.save(buffer, format="PNG")
     return buffer.getvalue()
 
-# Function to change pages
+# Navigation function
 def switch_page(page_name):
     st.session_state['page'] = page_name
-    st.experimental_rerun()
 
 # Navigation
 if st.session_state['page'] == 'home':
@@ -72,4 +71,4 @@ elif st.session_state['page'] == 'admin':
     st.dataframe(st.session_state['attendees'])
     if st.button("⬅ Back to Home"):
         switch_page('home')
-        
+

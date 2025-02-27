@@ -1,3 +1,4 @@
+git branch
 git status 
 git add .  
 git commit -m "Deploying app"
